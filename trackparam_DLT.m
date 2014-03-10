@@ -36,7 +36,7 @@
 %    affsig(4) = rotation angle
 %    affsig(5) = aspect ratio
 %    affsig(6) = skew angle
-clc; clear;
+clc; clear; close;
 addpath('affineUtility');
 addpath('drawUtility');
 addpath('imageUtility');
@@ -97,7 +97,7 @@ im = imread([fullPath, d(1).name]);
 imshow(im)
 [x, y] = ginput(2);
 p = [(x(1)+x(2))/2, (y(1)+y(2))/2, x(2)-x(1), y(2)-y(1), 0];
-close
+hold
 
 data = zeros(size(im, 1), size(im, 2), size(d, 1));
 for i = 1 : size(d, 1)

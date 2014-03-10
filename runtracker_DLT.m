@@ -32,7 +32,7 @@ savedRes = [];
 %disp('resize the window as necessary, then press any key..'); pause;
 %drawopt.showcondens = 0;  drawopt.thcondens = 1/opt.numsample;
 
-drawTrackRst(frame, param.est');
+drawTrackRst(frame, affparam2geom(param.est)');
 
 wimgs = [];
 
@@ -42,10 +42,10 @@ duration = 0; tic;
 if (exist('dispstr','var'))  dispstr='';  end
 L = [ones(opt.maxbasis, 1); (-1) * ones(100, 1)];
 nn = initDLT(tmpl, L);
-%L = [];
-%pos = tmpl.basis(:, 1 : opt.maxbasis);
-%pos(:, opt.maxbasis + 1) = tmpl.basis(:, 1);
-%opts.numepochs = 5 ;
+L = [];
+pos = tmpl.basis(:, 1 : opt.maxbasis);
+pos(:, opt.maxbasis + 1) = tmpl.basis(:, 1);
+opts.numepochs = 5 ;
 newNN.learningRate = 1e-2;
 for f = 1:size(data,3)  
   frame = double(data(:,:,f))/255;
@@ -80,7 +80,7 @@ for f = 1:size(data,3)
   savedRes = [savedRes; p];
   tmpl.basis = [pos];
   %drawopt = drawtrackresult(drawopt, f, frame, tmpl, param, []);
-  drawTrackRst(frame, param.est);
+  drawTrackRst(frame, affparam2geom(param.est));
   tic;
 end
 duration = duration + toc
