@@ -3,11 +3,7 @@
 %% All rights reserved.
 
 % initialize variables
-clc; clear;
-addpath('affineUtility');
-addpath('drawUtility');
-addpath('imageUtility');
-addpath('NN');
+
 trackparam_DLT;
 rand('state',0);  randn('state',0);
 frame = double(data(:,:,1))/255; % convert value from [0, 255] to [0, 1]

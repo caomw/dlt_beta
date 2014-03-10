@@ -36,12 +36,18 @@
 %    affsig(4) = rotation angle
 %    affsig(5) = aspect ratio
 %    affsig(6) = skew angle
-clear all
-dataPath = 'C:\Users\Wang\Documents\UMich\Courses\Project\tracking\Dataset\';
+clc; clear;
+addpath('affineUtility');
+addpath('drawUtility');
+addpath('imageUtility');
+addpath('NN');
+dataPath = '../Dataset/woman';
 % dataPath = 'F:\dropbox\Tracking\data\';
 title = 'woman';
 
 switch (title)
+case 'MotorRolling'; p = [117, 68, 122, 125, 0];
+	opt = struct('numsample',1000, 'affsig',[4,10,.005,.000,.001,.000], 'motion',[0, 0]);     
 case 'davidin';  p = [158 106 62 78 0]; %0.9
     opt = struct('numsample',1000, 'affsig',[4, 4,.005,.00,.001,.00], 'motion',[0, 0], 'updateThres', 0.9);
 case 'trellis';  p = [200 100 45 49 0]; %0.8
@@ -77,7 +83,8 @@ opt.condenssig = 0.01;
 opt.tmplsize = [32, 32];
 % Load data
 disp('Loading data...');
-fullPath = [dataPath, title, '\'];
+%fullPath = [dataPath, title, '/'];
+fullPath = [dataPath, '/'];
 d = dir([fullPath, '*.jpg']);
 if size(d, 1) == 0
     d = dir([fullPath, '*.png']);
@@ -86,6 +93,11 @@ if size(d, 1) == 0
     d = dir([fullPath, '*.bmp']);
 end
 im = imread([fullPath, d(1).name]);
+imshow(im)
+[x, y] = ginput(2);
+p = [(x(1)+x(2))/2, (y(1)+y(2))/2, x(2)-x(1), y(2)-y(1), 0];
+close
+
 data = zeros(size(im, 1), size(im, 2), size(d, 1));
 for i = 1 : size(d, 1)
     im = imread([fullPath, d(i).name]);

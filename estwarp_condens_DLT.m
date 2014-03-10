@@ -12,7 +12,7 @@ else
   idx = floor(sum(repmat(rand(1,n),[n,1]) > repmat(gather(cumconf),[1,n])))+1;
   param.param = param.param(:,idx);
 end
-param.param = param.param + repmat([opt.motion, 0, 0, 0, 0]',[1,n]) + randn(6,n).*repmat(opt.affsig(:),[1,n]);
+param.param = param.param + randn(6,n).*repmat(opt.affsig(:),[1,n]); %+ repmat([opt.motion, 0, 0, 0, 0]',[1,n]) ;
 % create crop_size x crop_size x particle_num matrix, to be passed into NN
 wimgs = warpimg(frm, affparam2mat(param.param), sz);
 if useGpu
