@@ -13,6 +13,7 @@ if ~isfield(opt,'minopt')
   opt.minopt = optimset; opt.minopt.MaxIter = 25; opt.minopt.Display='off';
 end
 
+
 tmpl.mean = warpimg(frame, param0, opt.tmplsize);
 tmpl.basis = [];
 % Sample 10 positive templates for initialization
@@ -25,11 +26,13 @@ tmpl.basis(:, opt.maxbasis + 1 : 100 + opt.maxbasis) = sampleNeg(frame, param0, 
 
 param.est = param0;
 savedRes = [];
- 
+
 % draw initial track window
-drawopt = drawtrackresult([], 0, frame, tmpl, param, []);
-disp('resize the window as necessary, then press any key..'); pause;
-drawopt.showcondens = 0;  drawopt.thcondens = 1/opt.numsample;
+%drawopt = drawtrackresult([], 0, frame, tmpl, param, []);
+%disp('resize the window as necessary, then press any key..'); pause;
+%drawopt.showcondens = 0;  drawopt.thcondens = 1/opt.numsample;
+
+drawTrackRst(frame, param.est');
 
 wimgs = [];
 
@@ -39,10 +42,10 @@ duration = 0; tic;
 if (exist('dispstr','var'))  dispstr='';  end
 L = [ones(opt.maxbasis, 1); (-1) * ones(100, 1)];
 nn = initDLT(tmpl, L);
-L = [];
-pos = tmpl.basis(:, 1 : opt.maxbasis);
-pos(:, opt.maxbasis + 1) = tmpl.basis(:, 1);
-opts.numepochs = 5 ;
+%L = [];
+%pos = tmpl.basis(:, 1 : opt.maxbasis);
+%pos(:, opt.maxbasis + 1) = tmpl.basis(:, 1);
+%opts.numepochs = 5 ;
 newNN.learningRate = 1e-2;
 for f = 1:size(data,3)  
   frame = double(data(:,:,f))/255;
@@ -76,7 +79,8 @@ for f = 1:size(data,3)
   opt.motion = [p(1)+p(3)-p_prev(1)-p_prev(3), p(2)+p(4)-p_prev(2)-p_prev(4)];
   savedRes = [savedRes; p];
   tmpl.basis = [pos];
-  drawopt = drawtrackresult(drawopt, f, frame, tmpl, param, []);
+  %drawopt = drawtrackresult(drawopt, f, frame, tmpl, param, []);
+  drawTrackRst(frame, param.est);
   tic;
 end
 duration = duration + toc
