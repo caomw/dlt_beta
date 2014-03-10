@@ -13,7 +13,7 @@ else
   param.param = param.param(:,idx);
 end
 param.param = param.param + randn(6,n).*repmat(opt.affsig(:),[1,n]); %+ repmat([opt.motion, 0, 0, 0, 0]',[1,n]) ;
-bbox = param2bbox(param.param, size(frm(:,:,1)), sz);
+bbox = param2bbox(param.param, size(frm(:,:,1)
 
 % create crop_size x crop_size x particle_num matrix, to be passed into NN
 wimgs = warpimg(frm, affparam2mat(param.param), sz);

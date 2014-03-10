@@ -5,15 +5,16 @@
 % initialize variables
 
 trackparam_DLT;
+matcaffe_init;
 rand('state',0);  randn('state',0);
-frame = double(data(:,:,1))/255; % convert value from [0, 255] to [0, 1]
+frame = double(data(:,:,:,1))/255; % convert value from [0, 255] to [0, 1]
  
 if ~exist('opt','var')  opt = [];  end
 if ~isfield(opt,'minopt')
   opt.minopt = optimset; opt.minopt.MaxIter = 25; opt.minopt.Display='off';
 end
 
-
+%{
 tmpl.mean = warpimg(frame, param0, opt.tmplsize);
 tmpl.basis = [];
 % Sample 10 positive templates for initialization
@@ -23,6 +24,7 @@ end
 % Sample 100 negative templates for initialization
 p0 = paramOld(5);
 tmpl.basis(:, opt.maxbasis + 1 : 100 + opt.maxbasis) = sampleNeg(frame, param0, opt.tmplsize, 100, opt, 8);
+%}
 
 param.est = param0;
 savedRes = [];
@@ -38,6 +40,7 @@ wimgs = [];
 
 
 % track the sequence from frame 2 onward
+%{
 duration = 0; tic;
 if (exist('dispstr','var'))  dispstr='';  end
 L = [ones(opt.maxbasis, 1); (-1) * ones(100, 1)];
@@ -47,15 +50,16 @@ pos = tmpl.basis(:, 1 : opt.maxbasis);
 pos(:, opt.maxbasis + 1) = tmpl.basis(:, 1);
 opts.numepochs = 5 ;
 newNN.learningRate = 1e-2;
+%}
 for f = 1:size(data,3)  
-  frame = double(data(:,:,f))/255;
+  frame = double(data(:,:,:,f))/255;
   p_prev = p;
   
   % do tracking
    param = estwarp_condens_DLT(frame, tmpl, param, opt, nn);
 
   % do update
-  
+  %{
   temp = warpimg(frame, param.est', opt.tmplsize);
   pos(:, mod(f - 1, opt.maxbasis) + 1) = temp(:);
   if  param.update
@@ -65,6 +69,7 @@ for f = 1:size(data,3)
       neg = [neg sampleNeg(frame, param.est', opt.tmplsize, 50, opt, 4)];
       nn = nntrain(nn, [pos neg]', [ones(opt.maxbasis + 1, 1); zeros(99, 1)], opts);
   end
+  %}
   
   duration = duration + toc;
   

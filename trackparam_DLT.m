@@ -81,7 +81,7 @@ opt.updateThres = 0.8;
 global useGpu;
 useGpu = true;
 opt.condenssig = 0.01;
-opt.tmplsize = [32, 32];
+opt.tmplsize = [227, 227];
 % Load data
 disp('Loading data...');
 %fullPath = [dataPath, title, '/'];
@@ -99,14 +99,9 @@ imshow(im)
 p = [(x(1)+x(2))/2, (y(1)+y(2))/2, x(2)-x(1), y(2)-y(1), 0];
 hold
 
-data = zeros(size(im, 1), size(im, 2), size(d, 1));
+data = zeros(size(im, 1), size(im, 2), 3, size(d, 1));
 for i = 1 : size(d, 1)
-    im = imread([fullPath, d(i).name]);
-    if ndims(im) == 2
-        data(:, :, i) = im;
-    else
-        data(:, :, i) = rgb2gray(im);
-    end
+    data(:, :, :, i) = im;
 end
 
 paramOld = [p(1), p(2), p(3)/opt.tmplsize(2), p(5), p(4) /p(3) / (opt.tmplsize(1) / opt.tmplsize(2)), 0];
