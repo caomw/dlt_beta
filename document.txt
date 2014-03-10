@@ -1,0 +1,41 @@
+affine geometric parameter q:
+	[dx, dy, scale, theta, aspect, skew]
+
+affine matrix p:
+	[p(1) p(2) p(3)]
+	[p(4) p(5) p(6)]
+	
+bounding box bbox:
+	[x1, y1, w, h, theta]
+
+p = affparam2mat(q)
+q = affparam2geom(p)
+
+est to bounding box:
+	res = affparam2geom(param.est);
+	p(1) = round(res(1));
+	p(2) = round(res(2)); 
+	p(3) = res(3) * opt.tmplsize(2);
+	p(4) = res(5) * (opt.tmplsize(1) / opt.tmplsize(2)) * p(3);
+	p(5) = res(4);
+	p(3) = round(p(3));
+	p(4) = round(p(4));
+
+param
+	|---- est(6 x 1): affine matrix of particle with highest confidence
+	|---- param(6 x numParticles): geometric parameters for each particle
+	|---- update: 0 or 1, indicates whether network architecture needs update
+	|---- conf (numParticles x 1): confidence probability for each particle, exponentially proportional to raw confidence score
+	|---- wimg (tmpl_size x tmpl_size): image with highest confidence
+
+	
+confidence (1 x numParticles): raw confidence calculated by softmax layer
+param.conf: probability that exponentially propotional to raw confidence score; normalized to sum up to 1
+
+confidence = confidence - min(confidence);
+param.conf = exp(double(confidence) ./ opt.condenssig)';
+param.conf = param.conf ./ sum(param.conf);
+
+[maxprob, maxidx] = max(param.conf);
+est = affparam2mat(param.param(:,maxidx));
+param.wimg = reshape(data(:,maxidx), sz);
