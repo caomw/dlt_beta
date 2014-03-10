@@ -41,6 +41,7 @@ addpath('affineUtility');
 addpath('drawUtility');
 addpath('imageUtility');
 addpath('NN');
+addpath('caffe');
 dataPath = '../Dataset/woman';
 % dataPath = 'F:\dropbox\Tracking\data\';
 title = 'woman';
