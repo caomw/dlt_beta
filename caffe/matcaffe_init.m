@@ -3,8 +3,8 @@
 % 
 use_gpu = true;
 
-model_def_file = './vocnet_deploy.prototxt';
-model_file = '../../../caffe/build/caffe_vocnet_train_iter_70000';
+model_def_file = './caffe/vocnet_deploy.prototxt';
+model_file = '../../caffe/build/caffe_vocnet_train_iter_70000';
 
 global caffe_batch_size
 tmpDir = '/tmp/';

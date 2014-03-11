@@ -52,11 +52,11 @@ opts.numepochs = 5 ;
 newNN.learningRate = 1e-2;
 %}
 for f = 1:size(data,3)  
-  frame = double(data(:,:,:,f))/255;
+  frame = data(:,:,:,f);
   p_prev = p;
   
   % do tracking
-   param = estwarp_condens_DLT(frame, tmpl, param, opt, nn);
+   param = estwarp_condens_DLT(frame, param, opt);
 
   % do update
   %{
