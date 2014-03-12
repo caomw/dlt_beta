@@ -1,9 +1,10 @@
-function param = estwarp_condens_DLT(frm, param, opt)
+function param = estwarp_condens_DLT(frame, param, opt)
 
 global useGpu;
+global caffe_batch_size;
+
 n = opt.numsample;
-%sz = size(tmpl.mean);
-%N = sz(1)*sz(2);
+sz = size(frame(:,:,1));
 
 if ~isfield(param,'param')
   param.param = repmat(affparam2geom(param.est(:)), [1,n]);
@@ -14,24 +15,40 @@ else
 end
 param.param = param.param + randn(6,n).*repmat(opt.affsig(:),[1,n]); %+ repmat([opt.motion, 0, 0, 0, 0]',[1,n]) ;
 % bbox: n-by-5
-bbox = param2bbox(param.param, size(frm(:,:,1)), [227, 227]);
+bbox = param2bbox(param.param, size(frame(:,:,1)), [227, 227]);
 
-input_data = zeros(227, 227, 3, n);
+images = zeros(227, 227, 3, n, 'single');
 d = load('./caffe/ilsvrc_2012_mean');
 IMAGE_MEAN = d.image_mean;
+IMAGE_MEAN = imresize(IMAGE_MEAN, [227, 227], 'bilinear');
 
+% images: 227 x 227 x 3 x n
 for i = 1:n
 	rect = bbox(i, 1:4);
-	im = frm(rect(2):rect(2)+rect(4), rect(1):rect(1)+rect(3), :);
+	im = frame(rect(2):rect(2)+rect(4), rect(1):rect(1)+rect(3), :);
 	im = imresize(im, [227, 227], 'bilinear');
-	input_data(:,:,:,i) = im(:,:,[3 2 1]) - IMAGE_MEAN;
+	im = im(:,:,[3 2 1]) - IMAGE_MEAN;
+	images(:,:,:,i) = permute(im, [2 1 3]);
 end
 
+epoch = ceil(n / caffe_batch_size);
+confidence = zeros(21, n);
+
 tic;
-% scores: 
-scores = caffe('forward', input_data);
+for e = 1:epoch
+	start = (e-1)*caffe_batch_size + 1;
+	if e == epoch
+		last = n;
+	else
+		last = start + caffe_batch_size - 1;
+	end
+	input_data = {images(:,:,:,start:last)};
+	scores = caffe('forward', input_data);
+	confidence(:, start:last) = reshape(scores{1}, [21, caffe_batch_size]);
+end
 toc;
-confidence = reshape(scores{1}, [21, n]);
+
+confidence = confidence(14,:);
 
 %{
 % create crop_size x crop_size x particle_num matrix, to be passed into NN
@@ -44,14 +61,15 @@ end
 
 t = nnff(nn, data', zeros(n, 1));
 confidence = t.a{6}';
-%}
 
-disp(max(confidence));
 if max(confidence) < opt.updateThres
     param.update = true;
 else
     param.update = false;
 end
+%}
+
+disp(max(confidence));
 confidence = confidence - min(confidence);
 param.conf = exp(double(confidence) ./opt.condenssig)';
 param.conf = param.conf ./ sum(param.conf);
@@ -60,7 +78,7 @@ if maxprob == 0 || isnan(maxprob)
     error('overflow!');
 end
 param.est = affparam2mat(param.param(:,maxidx));
-param.wimg = reshape(data(:,maxidx), sz);
+%param.wimg = reshape(data(:,maxidx), sz);
 
 if exist('coef', 'var')
     param.bestCoef = coef(:,maxidx);

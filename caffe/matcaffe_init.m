@@ -4,12 +4,12 @@
 use_gpu = true;
 
 model_def_file = './caffe/vocnet_deploy.prototxt';
-model_file = '../../caffe/build/caffe_vocnet_train_iter_70000';
+model_file = '../../caffe/build/caffe_vocnet_train_iter_130000';
 
 global caffe_batch_size
 tmpDir = '/tmp/';
 
-caffe('set_device',0); 
+caffe('set_device',0);
 
 if ~exist('batch_size','var')
 	batch_size = 100;
@@ -25,6 +25,7 @@ end
 
 % create a temp model_def_file with assigned batch_size
 caffe_batch_size = batch_size;
+
 
 modified_def_file = fullfile( tmpDir, ...
     [ 'caffe_deploy_' datestr(now,30) '-' sprintf( '%07d', randi(1e9-1) ) ] );
@@ -46,6 +47,7 @@ end
 
 fclose( fidIn );
 fclose( fidOut );
+
 
 % init caffe network (spews logging info)
 caffe('init', modified_def_file, model_file);

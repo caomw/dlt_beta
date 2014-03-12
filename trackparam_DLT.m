@@ -97,11 +97,10 @@ im = imread([fullPath, d(1).name]);
 imshow(im)
 [x, y] = ginput(2);
 p = [(x(1)+x(2))/2, (y(1)+y(2))/2, x(2)-x(1), y(2)-y(1), 0];
-hold
 
 data = zeros(size(im, 1), size(im, 2), 3, size(d, 1));
 for i = 1 : size(d, 1)
-    data(:, :, :, i) = im;
+    data(:, :, :, i) = imread([fullPath, d(i).name]);
 end
 
 paramOld = [p(1), p(2), p(3)/opt.tmplsize(2), p(5), p(4) /p(3) / (opt.tmplsize(1) / opt.tmplsize(2)), 0];
