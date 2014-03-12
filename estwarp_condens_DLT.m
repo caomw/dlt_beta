@@ -23,6 +23,8 @@ IMAGE_MEAN = d.image_mean;
 IMAGE_MEAN = imresize(IMAGE_MEAN, [227, 227], 'bilinear');
 
 % images: 227 x 227 x 3 x n
+% this part takes about 5 sec
+tic;
 for i = 1:n
 	rect = bbox(i, 1:4);
 	im = frame(rect(2):rect(2)+rect(4), rect(1):rect(1)+rect(3), :);
@@ -30,10 +32,12 @@ for i = 1:n
 	im = im(:,:,[3 2 1]) - IMAGE_MEAN;
 	images(:,:,:,i) = permute(im, [2 1 3]);
 end
+toc;
 
 epoch = ceil(n / caffe_batch_size);
 confidence = zeros(21, n);
 
+% this part takes about 2.7 sec
 tic;
 for e = 1:epoch
 	start = (e-1)*caffe_batch_size + 1;
@@ -48,7 +52,7 @@ for e = 1:epoch
 end
 toc;
 
-confidence = confidence(14,:);
+confidence = confidence(16,:);
 
 %{
 % create crop_size x crop_size x particle_num matrix, to be passed into NN

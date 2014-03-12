@@ -12,7 +12,7 @@ tmpDir = '/tmp/';
 caffe('set_device',0);
 
 if ~exist('batch_size','var')
-	batch_size = 100;
+	batch_size = 250;
 end
 
 if ~exist( model_def_file , 'file' )

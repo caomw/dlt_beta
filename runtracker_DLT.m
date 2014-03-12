@@ -44,6 +44,7 @@ for f = 1:size(data,4)
 
   drawTrackRst(frame, affparam2geom(param.est));
   tic;
+  disp(sprintf('Process %d/%d', f, size(data,4)));
 end
 duration = duration + toc
 save([title '_dlt'], 'savedRes');
