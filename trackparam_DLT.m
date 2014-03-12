@@ -36,12 +36,7 @@
 %    affsig(4) = rotation angle
 %    affsig(5) = aspect ratio
 %    affsig(6) = skew angle
-clc; clear; close;
-addpath('affineUtility');
-addpath('drawUtility');
-addpath('imageUtility');
-addpath('NN');
-addpath('caffe');
+
 dataPath = '../Dataset/woman';
 % dataPath = 'F:\dropbox\Tracking\data\';
 title = 'woman';
@@ -78,12 +73,12 @@ end
 opt.maxbasis = 10;
 opt.updateThres = 0.8;
 % Indicate whether to use GPU in computation.
-global useGpu;
-useGpu = true;
+
 opt.condenssig = 0.01;
 opt.tmplsize = [227, 227];
-% Load data
-disp('Loading data...');
+
+global object_class;
+
 %fullPath = [dataPath, title, '/'];
 fullPath = [dataPath, '/'];
 d = dir([fullPath, '*.jpg']);
@@ -95,9 +90,24 @@ if size(d, 1) == 0
 end
 im = imread([fullPath, d(1).name]);
 imshow(im)
+
+disp('Please specify the object to be tracked: ');
 [x, y] = ginput(2);
 p = [(x(1)+x(2))/2, (y(1)+y(2))/2, x(2)-x(1), y(2)-y(1), 0];
 
+
+images = zeros(227, 227, 3, caffe_batch_size, 'single');
+patch = im(y(1):y(2), x(1):x(2), :);
+images(:,:,:,1:10) = prepare_image(patch);
+input_data = {images};
+scores = caffe('forward', input_data);
+scores = reshape(scores{1}(1:210), [21, 10]);
+[maxScore, object_class] = max(mean(scores, 2));
+disp(sprintf('Object to be tracked is %d', object_class));
+
+
+% Load data
+disp('Loading data...');
 data = zeros(size(im, 1), size(im, 2), 3, size(d, 1));
 for i = 1 : size(d, 1)
     data(:, :, :, i) = imread([fullPath, d(i).name]);

@@ -1,7 +1,7 @@
 function param = estwarp_condens_DLT(frame, param, opt)
 
-global useGpu;
 global caffe_batch_size;
+global object_class;
 
 n = opt.numsample;
 sz = size(frame(:,:,1));
@@ -52,26 +52,7 @@ for e = 1:epoch
 end
 toc;
 
-confidence = confidence(16,:);
-
-%{
-% create crop_size x crop_size x particle_num matrix, to be passed into NN
-%wimgs = warpimg(frm, affparam2mat(param.param), sz);
-if useGpu
-    data = gpuArray(reshape(wimgs,[N,n]));
-else
-    data = reshape(wimgs,[N,n]);
-end
-
-t = nnff(nn, data', zeros(n, 1));
-confidence = t.a{6}';
-
-if max(confidence) < opt.updateThres
-    param.update = true;
-else
-    param.update = false;
-end
-%}
+confidence = confidence(object_class,:);
 
 disp(max(confidence));
 confidence = confidence - min(confidence);
@@ -82,7 +63,6 @@ if maxprob == 0 || isnan(maxprob)
     error('overflow!');
 end
 param.est = affparam2mat(param.param(:,maxidx));
-%param.wimg = reshape(data(:,maxidx), sz);
 
 if exist('coef', 'var')
     param.bestCoef = coef(:,maxidx);

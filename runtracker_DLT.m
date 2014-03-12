@@ -2,10 +2,17 @@
 %% Learning A Deep Compact Image Representation for Visual Tracking. (NIPS2013')
 %% All rights reserved.
 
+clc; clear; close;
+addpath('affineUtility');
+addpath('drawUtility');
+addpath('imageUtility');
+addpath('NN');
+addpath('caffe');
+
 % initialize variables
 
-trackparam_DLT;
 matcaffe_init;
+trackparam_DLT;
 rand('state',0);  randn('state',0);
 frame = data(:,:,:,1);
  
