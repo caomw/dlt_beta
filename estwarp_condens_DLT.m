@@ -14,16 +14,17 @@ else
   param.param = param.param(:,idx);
 end
 param.param = param.param + randn(6,n).*repmat(opt.affsig(:),[1,n]); %+ repmat([opt.motion, 0, 0, 0, 0]',[1,n]) ;
-% bbox: n-by-5
-bbox = param2bbox(param.param, size(frame(:,:,1)), [227, 227]);
 
-images = zeros(227, 227, 3, n, 'single');
+
 d = load('./caffe/ilsvrc_2012_mean');
 IMAGE_MEAN = d.image_mean;
 IMAGE_MEAN = imresize(IMAGE_MEAN, [227, 227], 'bilinear');
 
-% images: 227 x 227 x 3 x n
-% this part takes about 5 sec
+% extract patch feeded into caffe
+% images: 227 x 227 x 3 x n, type should be single
+% bbox: n-by-5
+images = zeros(227, 227, 3, n, 'single');
+bbox = param2bbox(param.param, size(frame(:,:,1)), [227, 227]);
 tic;
 for i = 1:n
 	images(:,:,:,i) = imresize(frame(bbox(i,2):bbox(i,2)+bbox(i,4), bbox(i,1):bbox(i,1)+bbox(i,3), :), [227, 227]);
