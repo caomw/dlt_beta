@@ -89,12 +89,21 @@ if size(d, 1) == 0
     d = dir([fullPath, '*.bmp']);
 end
 im = imread([fullPath, d(1).name]);
+
+% Load data
+disp('Loading data...');
+data = zeros(size(im, 1), size(im, 2), 3, size(d, 1));
+for i = 1 : size(d, 1)
+    data(:, :, :, i) = imread([fullPath, d(i).name]);
+end
+
+% perform the initial detection to determine what class to track
+
 imshow(im)
 
 disp('Please specify the object to be tracked: ');
 [x, y] = ginput(2);
 p = [(x(1)+x(2))/2, (y(1)+y(2))/2, x(2)-x(1), y(2)-y(1), 0];
-
 
 images = zeros(227, 227, 3, caffe_batch_size, 'single');
 patch = im(y(1):y(2), x(1):x(2), :);
@@ -104,14 +113,6 @@ scores = caffe('forward', input_data);
 scores = reshape(scores{1}(1:210), [21, 10]);
 [maxScore, object_class] = max(mean(scores, 2));
 disp(sprintf('Object to be tracked is %d', object_class));
-
-
-% Load data
-disp('Loading data...');
-data = zeros(size(im, 1), size(im, 2), 3, size(d, 1));
-for i = 1 : size(d, 1)
-    data(:, :, :, i) = imread([fullPath, d(i).name]);
-end
 
 paramOld = [p(1), p(2), p(3)/opt.tmplsize(2), p(5), p(4) /p(3) / (opt.tmplsize(1) / opt.tmplsize(2)), 0];
 param0 = affparam2mat(paramOld);

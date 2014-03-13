@@ -26,12 +26,10 @@ IMAGE_MEAN = imresize(IMAGE_MEAN, [227, 227], 'bilinear');
 % this part takes about 5 sec
 tic;
 for i = 1:n
-	rect = bbox(i, 1:4);
-	im = frame(rect(2):rect(2)+rect(4), rect(1):rect(1)+rect(3), :);
-	im = imresize(im, [227, 227], 'bilinear');
-	im = im(:,:,[3 2 1]) - IMAGE_MEAN;
-	images(:,:,:,i) = permute(im, [2 1 3]);
+	images(:,:,:,i) = imresize(frame(bbox(i,2):bbox(i,2)+bbox(i,4), bbox(i,1):bbox(i,1)+bbox(i,3), :), [227, 227]);
 end
+images = bsxfun( @minus, images(:,:,[3 2 1],:), IMAGE_MEAN );
+images = permute(images, [2 1 3 4]);
 toc;
 
 epoch = ceil(n / caffe_batch_size);
