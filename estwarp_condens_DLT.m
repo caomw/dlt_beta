@@ -2,18 +2,19 @@ function param = estwarp_condens_DLT(frame, param, opt)
 
 global caffe_batch_size;
 global object_class;
+global DEBUG;
 
 n = opt.numsample;
 sz = size(frame(:,:,1));
 
-if ~isfield(param,'param')
-  param.param = repmat(affparam2geom(param.est(:)), [1,n]);
-else
-  cumconf = cumsum(param.conf);
-  idx = floor(sum(repmat(rand(1,n),[n,1]) > repmat(gather(cumconf),[1,n])))+1;
-  param.param = param.param(:,idx);
-end
-param.param = param.param + randn(6,n).*repmat(opt.affsig(:),[1,n]); %+ repmat([opt.motion, 0, 0, 0, 0]',[1,n]) ;
+%if ~isfield(param,'param')
+%  param.param = repmat(affparam2geom(param.est(:)), [1,n]);
+%else
+%  cumconf = cumsum(param.conf);
+%  idx = floor(sum(repmat(rand(1,n),[n,1]) > repmat(gather(cumconf),[1,n])))+1;
+%  param.param = param.param(:,idx);
+%end
+param.param = repmat(affparam2geom(param.est(:)), [1,n]) + randn(6,n).*repmat(opt.affsig(:),[1,n]);% + repmat([opt.motion, 0, 0, 0, 0]',[1,n]) ;
 
 
 d = load('./caffe/ilsvrc_2012_mean');
@@ -25,6 +26,18 @@ IMAGE_MEAN = imresize(IMAGE_MEAN, [227, 227], 'bilinear');
 % bbox: n-by-5
 images = zeros(227, 227, 3, n, 'single');
 bbox = param2bbox(param.param, size(frame(:,:,1)), [227, 227]);
+
+%%%
+% DEBUG
+%%%
+if DEBUG
+	hold on
+	X = bbox(:,1)+bbox(:,3)/2;
+	Y = bbox(:,2)+bbox(:,4)/2;
+	plot(X, Y, 'x', 'Color', 'c');
+	drawnow;
+end
+
 tic;
 for i = 1:n
 	images(:,:,:,i) = imresize(frame(bbox(i,2):bbox(i,2)+bbox(i,4), bbox(i,1):bbox(i,1)+bbox(i,3), :), [227, 227]);
@@ -51,17 +64,23 @@ for e = 1:epoch
 end
 toc;
 
-confidence = confidence(object_class,:);
+confidence = confidence(object_class+1,:)';
+selected_idx = find(confidence > 0.85);
+if(isempty(selected_idx))
+	[score, selected_idx] = sort(confidence, 1, 'descend');
+end
+
+est_param = mean(param.param(:, selected_idx),2);
 
 disp(max(confidence));
 confidence = confidence - min(confidence);
-param.conf = exp(double(confidence) ./opt.condenssig)';
+param.conf = exp(double(confidence) ./opt.condenssig);
 param.conf = param.conf ./ sum(param.conf);
 [maxprob,maxidx] = max(param.conf);
 if maxprob == 0 || isnan(maxprob)
     error('overflow!');
 end
-param.est = affparam2mat(param.param(:,maxidx));
+param.est = affparam2mat(est_param);
 
 if exist('coef', 'var')
     param.bestCoef = coef(:,maxidx);

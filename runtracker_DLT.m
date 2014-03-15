@@ -10,6 +10,8 @@ addpath('NN');
 addpath('caffe');
 
 % initialize variables
+global DEBUG;
+DEBUG = true;
 
 matcaffe_init;
 trackparam_DLT;
@@ -24,36 +26,31 @@ end
 param.est = param0;
 savedRes = [];
 
-hold
+hold on
 drawTrackRst(frame, affparam2geom(param.est)');
 
-duration = 0; tic;
-
 for f = 1:size(data,4)  
-  frame = data(:,:,:,f);
-  p_prev = p;
-  
-  % do tracking
-   param = estwarp_condens_DLT(frame, param, opt);
-  
-  duration = duration + toc;
-  
-  res = affparam2geom(param.est);
-  p(1) = round(res(1));
-  p(2) = round(res(2)); 
-  p(3) = res(3) * opt.tmplsize(2);
-  p(4) = res(5) * (opt.tmplsize(1) / opt.tmplsize(2)) * p(3);
-  p(5) = res(4);
-  p(3) = round(p(3));
-  p(4) = round(p(4));
-  opt.motion = [p(1)+p(3)-p_prev(1)-p_prev(3), p(2)+p(4)-p_prev(2)-p_prev(4)];
-  savedRes = [savedRes; p];
+	frame = data(:,:,:,f);
+	p_prev = p;
 
-  drawTrackRst(frame, affparam2geom(param.est));
-  tic;
-  disp(sprintf('Process %d/%d', f, size(data,4)));
+	% do tracking
+	param = estwarp_condens_DLT(frame, param, opt);
+
+	res = affparam2geom(param.est);
+	p(1) = round(res(1));
+	p(2) = round(res(2)); 
+	p(3) = res(3) * opt.tmplsize(2);
+	p(4) = res(5) * (opt.tmplsize(1) / opt.tmplsize(2)) * p(3);
+	p(5) = res(4);
+	p(3) = round(p(3));
+	p(4) = round(p(4));
+	opt.motion = [p(1)-p_prev(1), p(2)-p_prev(2)];
+	savedRes = [savedRes; p];
+
+	drawTrackRst(frame, affparam2geom(param.est));
+	disp(sprintf('Process %d/%d', f, size(data,4)));
 end
-duration = duration + toc
+
 save([title '_dlt'], 'savedRes');
 fprintf('%d frames took %.3f seconds : %.3fps\n',f,duration,f/duration);
 
