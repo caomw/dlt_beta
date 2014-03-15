@@ -14,7 +14,7 @@ function bbox = param2bbox(param, imSize, tmplsize)
     bbox(4,:) = min(h, round(bbox(4,:)));
     bbox(1,:) = bbox(1,:)-bbox(3,:)/2;
     bbox(2,:) = bbox(2,:)-bbox(4,:)/2;
-    bbox = bbox';
+    bbox = uint8(bbox');
     
     bbox(:, 1) = max(bbox(:, 1) ,1);
     bbox(:, 1) = min(w-bbox(:, 3)+1, bbox(:, 1));

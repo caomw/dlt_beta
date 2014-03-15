@@ -25,7 +25,6 @@ matcaffe_init;
 % prepare oversampled input
 tic;
 images = prepare_image(im);
-images = repmat(images, [1,1,1,10]);
 input_data = {images};
 toc;
 

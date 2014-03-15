@@ -36,15 +36,11 @@
 %    affsig(4) = rotation angle
 %    affsig(5) = aspect ratio
 %    affsig(6) = skew angle
-clc; clear; close;
-addpath('affineUtility');
-addpath('drawUtility');
-addpath('imageUtility');
-addpath('NN');
-addpath('caffe');
-dataPath = '../Dataset/woman';
+
+dataPath = '../Dataset/';
 % dataPath = 'F:\dropbox\Tracking\data\';
-title = 'woman';
+title = 'CarScale';
+auto_detect = false;
 
 switch (title)
 case 'MotorRolling'; p = [117, 68, 122, 125, 0];
@@ -71,21 +67,21 @@ case 'bird2';  p = [116 254 68 72 0.0]; % 0.8
     opt = struct('numsample',1000, 'affsig',[4,4,.005,.000,.001,.000], 'motion',[0, 0]); 
 case 'surfer';  p = [286 152 32 35 0.0]; %0.8
     opt = struct('numsample',1000,'affsig',[8,8,.01,.000,.001,.000], 'motion',[0, 0]);     
-otherwise;  error(['unknown title ' title]);
+otherwise;  p = []; opt = struct('numsample',1000, 'affsig',[20,20,.02,.000,.001,.000], 'motion',[0, 0]);
 end
 
 % The number of previous frames used as positive samples.
 opt.maxbasis = 10;
 opt.updateThres = 0.8;
 % Indicate whether to use GPU in computation.
-global useGpu;
-useGpu = true;
+
 opt.condenssig = 0.01;
 opt.tmplsize = [227, 227];
-% Load data
-disp('Loading data...');
-%fullPath = [dataPath, title, '/'];
-fullPath = [dataPath, '/'];
+
+global object_class;
+
+fullPath = [dataPath, title, '/img/'];
+%fullPath = [dataPath, '/' 'img/'];
 d = dir([fullPath, '*.jpg']);
 if size(d, 1) == 0
     d = dir([fullPath, '*.png']);
@@ -94,15 +90,35 @@ if size(d, 1) == 0
     d = dir([fullPath, '*.bmp']);
 end
 im = imread([fullPath, d(1).name]);
-imshow(im)
-[x, y] = ginput(2);
-p = [(x(1)+x(2))/2, (y(1)+y(2))/2, x(2)-x(1), y(2)-y(1), 0];
-hold
 
+% Load data
+disp('Loading data...');
 data = zeros(size(im, 1), size(im, 2), 3, size(d, 1));
 for i = 1 : size(d, 1)
-    data(:, :, :, i) = im;
+    data(:, :, :, i) = imread([fullPath, d(i).name]);
 end
+
+% perform the initial detection to determine what class to track
+
+imshow(im)
+
+disp('Please specify the object to be tracked: ');
+[x, y] = ginput(2);
+p = [(x(1)+x(2))/2, (y(1)+y(2))/2, x(2)-x(1), y(2)-y(1), 0];
+
+if ~auto_detect
+	images = zeros(227, 227, 3, caffe_batch_size, 'single');
+	patch = im(y(1):y(2), x(1):x(2), :);
+	images(:,:,:,1:10) = prepare_image(patch);
+	input_data = {images};
+	scores = caffe('forward', input_data);
+	scores = reshape(scores{1}(1:210), [21, 10]);
+	scores = mean(scores, 2)
+	[maxScore, object_class] = max(scores(2:end, :));
+else
+	object_class = 7;
+end
+disp(sprintf('Object to be tracked is %d', object_class));
 
 paramOld = [p(1), p(2), p(3)/opt.tmplsize(2), p(5), p(4) /p(3) / (opt.tmplsize(1) / opt.tmplsize(2)), 0];
 param0 = affparam2mat(paramOld);

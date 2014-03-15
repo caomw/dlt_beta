@@ -2,40 +2,34 @@
 %% Learning A Deep Compact Image Representation for Visual Tracking. (NIPS2013')
 %% All rights reserved.
 
-% initialize variables
+clc; clear; close;
+addpath('affineUtility');
+addpath('drawUtility');
+addpath('imageUtility');
+addpath('NN');
+addpath('caffe');
 
-trackparam_DLT;
+% initialize variables
+global DEBUG;
+DEBUG = true;
+
 matcaffe_init;
+trackparam_DLT;
 rand('state',0);  randn('state',0);
-frame = double(data(:,:,:,1))/255; % convert value from [0, 255] to [0, 1]
+frame = data(:,:,:,1);
  
 if ~exist('opt','var')  opt = [];  end
 if ~isfield(opt,'minopt')
   opt.minopt = optimset; opt.minopt.MaxIter = 25; opt.minopt.Display='off';
 end
 
-%{
-tmpl.mean = warpimg(frame, param0, opt.tmplsize);
-tmpl.basis = [];
-% Sample 10 positive templates for initialization
-for i = 1 : opt.maxbasis / 10
-    tmpl.basis(:, (i - 1) * 10 + 1 : i * 10) = samplePos_DLT(frame, param0, opt.tmplsize);
-end
-% Sample 100 negative templates for initialization
-p0 = paramOld(5);
-tmpl.basis(:, opt.maxbasis + 1 : 100 + opt.maxbasis) = sampleNeg(frame, param0, opt.tmplsize, 100, opt, 8);
-%}
-
 param.est = param0;
 savedRes = [];
 
-% draw initial track window
-%drawopt = drawtrackresult([], 0, frame, tmpl, param, []);
-%disp('resize the window as necessary, then press any key..'); pause;
-%drawopt.showcondens = 0;  drawopt.thcondens = 1/opt.numsample;
-
+hold on
 drawTrackRst(frame, affparam2geom(param.est)');
 
+<<<<<<< HEAD
 wimgs = [];
 
 
@@ -87,8 +81,30 @@ for f = 1:size(data,3)
   %drawopt = drawtrackresult(drawopt, f, frame, tmpl, param, []);
   drawTrackRst(frame, affparam2geom(param.est));
   tic;
+=======
+for f = 1:size(data,4)  
+	frame = data(:,:,:,f);
+	p_prev = p;
+
+	% do tracking
+	param = estwarp_condens_DLT(frame, param, opt);
+
+	res = affparam2geom(param.est);
+	p(1) = round(res(1));
+	p(2) = round(res(2)); 
+	p(3) = res(3) * opt.tmplsize(2);
+	p(4) = res(5) * (opt.tmplsize(1) / opt.tmplsize(2)) * p(3);
+	p(5) = res(4);
+	p(3) = round(p(3));
+	p(4) = round(p(4));
+	opt.motion = [p(1)-p_prev(1), p(2)-p_prev(2)];
+	savedRes = [savedRes; p];
+
+	drawTrackRst(frame, affparam2geom(param.est));
+	disp(sprintf('Process %d/%d', f, size(data,4)));
+>>>>>>> caffe
 end
-duration = duration + toc
+
 save([title '_dlt'], 'savedRes');
 fprintf('%d frames took %.3f seconds : %.3fps\n',f,duration,f/duration);
 
