@@ -1,4 +1,4 @@
-function param = estwarp_condens_DLT(frame, param, opt)
+%function param = estwarp_condens_DLT(frame, param, opt)
 	global caffe_batch_size;
 	global object_class;
 	global DEBUG;
@@ -28,9 +28,6 @@ function param = estwarp_condens_DLT(frame, param, opt)
 	images = zeros(227, 227, 3, n, 'single');
 	%bbox = param2bbox(param.param, size(frame(:,:,1)), [227, 227]);
 
-	%%%
-	% DEBUG
-	%%%
 	if DEBUG
 		hold on
 		X = bbox(:,1)+bbox(:,3)/2;
@@ -41,7 +38,7 @@ function param = estwarp_condens_DLT(frame, param, opt)
 
 	tic;
 	for i = 1:n
-		images(:,:,:,i) = imresize(frame(bbox(i,2):bbox(i,2)+bbox(i,4), bbox(i,1):bbox(i,1)+bbox(i,3), :), [227, 227]);
+		images(:,:,:,i) = imresize(frame(bbox(i,2):bbox(i,2)+bbox(i,4)-1, bbox(i,1):bbox(i,1)+bbox(i,3)-1, :), [227, 227]);
 	end
 	images = bsxfun( @minus, images(:,:,[3 2 1],:), IMAGE_MEAN );
 	images = permute(images, [2 1 3 4]);
@@ -69,9 +66,10 @@ function param = estwarp_condens_DLT(frame, param, opt)
 	selected_idx = find(confidence > 0.85);
 	if(isempty(selected_idx))
 		[score, selected_idx] = sort(confidence, 1, 'descend');
+		selected_idx = selected_idx(1:10);
 	end
 
-	est_param = mean(param.param(:, selected_idx),2);
+	est_param = mean(bbox(selected_idx,:),1);
 
 	disp(max(confidence));
 	confidence = confidence - min(confidence);
@@ -82,4 +80,4 @@ function param = estwarp_condens_DLT(frame, param, opt)
 		error('overflow!');
 	end
 	param.est = est_param;
-end
+%end

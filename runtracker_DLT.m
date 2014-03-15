@@ -32,9 +32,9 @@ for f = 1:size(data,4)
 	p_prev = p;
 
 	% do tracking
-	param = estwarp_condens_DLT(frame, param, opt);
-
+	estwarp_condens_DLT;
 	p = param.est;
+	opt.affsig(1:2) = [p(3)/4, p(4)/4];
 	opt.motion = [p(1)-p_prev(1), p(2)-p_prev(2)];
 	savedRes = [savedRes; p];
 
@@ -43,5 +43,5 @@ for f = 1:size(data,4)
 end
 
 save([title '_dlt'], 'savedRes');
-fprintf('%d frames took %.3f seconds : %.3fps\n',f,duration,f/duration);
+%fprintf('%d frames took %.3f seconds : %.3fps\n',f,duration,f/duration);
 
