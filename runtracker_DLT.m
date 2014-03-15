@@ -18,70 +18,15 @@ trackparam_DLT;
 rand('state',0);  randn('state',0);
 frame = data(:,:,:,1);
  
-if ~exist('opt','var')  opt = [];  end
-if ~isfield(opt,'minopt')
-  opt.minopt = optimset; opt.minopt.MaxIter = 25; opt.minopt.Display='off';
-end
+if ~exist('opt','var')  
+opt = [];  end
 
 param.est = param0;
 savedRes = [];
 
 hold on
-drawTrackRst(frame, affparam2geom(param.est)');
+drawTrackRst(frame, param.est);
 
-<<<<<<< HEAD
-wimgs = [];
-
-
-% track the sequence from frame 2 onward
-%{
-duration = 0; tic;
-if (exist('dispstr','var'))  dispstr='';  end
-L = [ones(opt.maxbasis, 1); (-1) * ones(100, 1)];
-nn = initDLT(tmpl, L);
-L = [];
-pos = tmpl.basis(:, 1 : opt.maxbasis);
-pos(:, opt.maxbasis + 1) = tmpl.basis(:, 1);
-opts.numepochs = 5 ;
-newNN.learningRate = 1e-2;
-%}
-for f = 1:size(data,3)  
-  frame = double(data(:,:,:,f))/255;
-  p_prev = p;
-  
-  % do tracking
-   param = estwarp_condens_DLT(frame, tmpl, param, opt, nn);
-
-  % do update
-  %{
-  temp = warpimg(frame, param.est', opt.tmplsize);
-  pos(:, mod(f - 1, opt.maxbasis) + 1) = temp(:);
-  if  param.update
-      opts.batchsize = 10;
-      % Sample two set of negative samples at different range.
-      neg = sampleNeg(frame, param.est', opt.tmplsize, 49, opt, 8);
-      neg = [neg sampleNeg(frame, param.est', opt.tmplsize, 50, opt, 4)];
-      nn = nntrain(nn, [pos neg]', [ones(opt.maxbasis + 1, 1); zeros(99, 1)], opts);
-  end
-  %}
-  
-  duration = duration + toc;
-  
-  res = affparam2geom(param.est);
-  p(1) = round(res(1));
-  p(2) = round(res(2)); 
-  p(3) = res(3) * opt.tmplsize(2);
-  p(4) = res(5) * (opt.tmplsize(1) / opt.tmplsize(2)) * p(3);
-  p(5) = res(4);
-  p(3) = round(p(3));
-  p(4) = round(p(4));
-  opt.motion = [p(1)+p(3)-p_prev(1)-p_prev(3), p(2)+p(4)-p_prev(2)-p_prev(4)];
-  savedRes = [savedRes; p];
-  tmpl.basis = [pos];
-  %drawopt = drawtrackresult(drawopt, f, frame, tmpl, param, []);
-  drawTrackRst(frame, affparam2geom(param.est));
-  tic;
-=======
 for f = 1:size(data,4)  
 	frame = data(:,:,:,f);
 	p_prev = p;
@@ -89,20 +34,12 @@ for f = 1:size(data,4)
 	% do tracking
 	param = estwarp_condens_DLT(frame, param, opt);
 
-	res = affparam2geom(param.est);
-	p(1) = round(res(1));
-	p(2) = round(res(2)); 
-	p(3) = res(3) * opt.tmplsize(2);
-	p(4) = res(5) * (opt.tmplsize(1) / opt.tmplsize(2)) * p(3);
-	p(5) = res(4);
-	p(3) = round(p(3));
-	p(4) = round(p(4));
+	p = param.est;
 	opt.motion = [p(1)-p_prev(1), p(2)-p_prev(2)];
 	savedRes = [savedRes; p];
 
-	drawTrackRst(frame, affparam2geom(param.est));
+	drawTrackRst(frame, p);
 	disp(sprintf('Process %d/%d', f, size(data,4)));
->>>>>>> caffe
 end
 
 save([title '_dlt'], 'savedRes');

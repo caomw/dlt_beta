@@ -2,8 +2,8 @@ function bbox = param2bbox(param, imSize, tmplsize)
     % bbox = [x0, y0, w, h, rot]
     % param = affine geometric parameter: [dx, dy, scale, theta, aspect, skew]
     bbox = zeros(5, size(param, 2));
-    w = imSize(1);
-    h = imSize(2);
+    w = imSize(2);
+    h = imSize(1);
 
     bbox(1,:) = round(param(1,:));
     bbox(2,:) = round(param(2,:));

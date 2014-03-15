@@ -42,6 +42,7 @@ dataPath = '../Dataset/';
 title = 'CarScale';
 auto_detect = false;
 
+%{
 switch (title)
 case 'MotorRolling'; p = [117, 68, 122, 125, 0];
 	opt = struct('numsample',1000, 'affsig',[4,10,.005,.000,.001,.000], 'motion',[0, 0]);     
@@ -69,11 +70,12 @@ case 'surfer';  p = [286 152 32 35 0.0]; %0.8
     opt = struct('numsample',1000,'affsig',[8,8,.01,.000,.001,.000], 'motion',[0, 0]);     
 otherwise;  p = []; opt = struct('numsample',1000, 'affsig',[20,20,.02,.000,.001,.000], 'motion',[0, 0]);
 end
+%}
 
-% The number of previous frames used as positive samples.
-opt.maxbasis = 10;
-opt.updateThres = 0.8;
-% Indicate whether to use GPU in computation.
+% affsig: std-dev of [dx, dy, w, h];
+
+p = [];
+opt = struct('numsample',1000, 'affsig',[20,20,5,5], 'motion',[0, 0]);
 
 opt.condenssig = 0.01;
 opt.tmplsize = [227, 227];
@@ -104,7 +106,7 @@ imshow(im)
 
 disp('Please specify the object to be tracked: ');
 [x, y] = ginput(2);
-p = [(x(1)+x(2))/2, (y(1)+y(2))/2, x(2)-x(1), y(2)-y(1), 0];
+p = [x(1), y(1), x(2)-x(1), y(2)-y(1), 0];
 
 if ~auto_detect
 	images = zeros(227, 227, 3, caffe_batch_size, 'single');
@@ -120,5 +122,5 @@ else
 end
 disp(sprintf('Object to be tracked is %d', object_class));
 
-paramOld = [p(1), p(2), p(3)/opt.tmplsize(2), p(5), p(4) /p(3) / (opt.tmplsize(1) / opt.tmplsize(2)), 0];
-param0 = affparam2mat(paramOld);
+%paramOld = [p(1), p(2), p(3)/opt.tmplsize(2), p(5), p(4) /p(3) / (opt.tmplsize(1) / opt.tmplsize(2)), 0];
+param0 = p;
