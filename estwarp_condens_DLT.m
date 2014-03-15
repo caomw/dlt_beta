@@ -1,39 +1,10 @@
-<<<<<<< HEAD
-function param = estwarp_condens_DLT(frm, tmpl, param, opt, nn)
-=======
 function param = estwarp_condens_DLT(frame, param, opt)
 
 global caffe_batch_size;
 global object_class;
 global DEBUG;
->>>>>>> caffe
 
 n = opt.numsample;
-<<<<<<< HEAD
-sz = size(tmpl.mean);
-N = sz(1)*sz(2);
-
-if ~isfield(param,'param')
-  param.param = repmat(affparam2geom(param.est(:)), [1,n]);
-else
-  cumconf = cumsum(param.conf);
-  idx = floor(sum(repmat(rand(1,n),[n,1]) > repmat(gather(cumconf),[1,n])))+1;
-  param.param = param.param(:,idx);
-end
-param.param = param.param + randn(6,n).*repmat(opt.affsig(:),[1,n]); %+ repmat([opt.motion, 0, 0, 0, 0]',[1,n]) ;
-bbox = param2bbox(param.param, size(frm(:,:,1)), sz);
-
-% create crop_size x crop_size x particle_num matrix, to be passed into NN
-wimgs = warpimg(frm, affparam2mat(param.param), sz);
-if useGpu
-    data = gpuArray(reshape(wimgs,[N,n]));
-else
-    data = reshape(wimgs,[N,n]);
-end
-
-t = nnff(nn, data', zeros(n, 1));
-confidence = t.a{6}';
-=======
 sz = size(frame(:,:,1));
 
 %if ~isfield(param,'param')
@@ -100,7 +71,6 @@ if(isempty(selected_idx))
 end
 
 est_param = mean(param.param(:, selected_idx),2);
->>>>>>> caffe
 
 disp(max(confidence));
 confidence = confidence - min(confidence);
@@ -111,7 +81,3 @@ if maxprob == 0 || isnan(maxprob)
     error('overflow!');
 end
 param.est = affparam2mat(est_param);
-
-if exist('coef', 'var')
-    param.bestCoef = coef(:,maxidx);
-end
