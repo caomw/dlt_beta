@@ -81,12 +81,11 @@
 	%est_param = mean(bbox(selected_idx,:),1);
 
 	disp(max(confidence));
-	
-	% d: n-by-1, squared Euclidean distance between each bbox and previous estimation
-	d = [X-(param.est(1)+param.est(3)/2), Y-(param.est(2)-param.est(4)/2)];
+
+	D = [X-(param.est(1)+param.est(3)/2), Y-(param.est(2)+param.est(4)/2)];
 	mu = [0, 0];
 	sigma = [opt.affsig(1), 0; 0, opt.affsig(2)];
-	w = mvnpdf(d, mu, sigma);
+	w = mvnpdf(D, mu, sigma);
 	confidence = confidence .* w;
 	
 	conf = confidence - min(confidence);
@@ -94,14 +93,20 @@
 	param.conf = param.conf ./ sum(param.conf);
 	[sorted_conf, sorted_idx] = sort(param.conf, 'descend');
 	cumconf = cumsum(sorted_conf);
-	idx = min(find(cumconf >= 0.9));
-	sorted_idx(1:idx); % particles that within the bbox contains 98% energy
+	idx = min(find(cumconf >= 0.8));
+	selected_idx = sorted_idx(1:idx); % particles that within the bbox contains 98% energy
+	
+	if DEBUG
+		hold on;
+		plot(X(selected_idx), Y(selected_idx), 'x', 'Color', 'r');
+		drawnow;
+	end
 	
 	%x0 = min(bbox(sorted_idx,1));
 	%y0 = min(bbox(sorted_idx,2));
 	%x1 = max(bbox(sorted_idx,1));
 	%y1 = max(bbox(sorted_idx,2));
-	est_param = mean(bbox(sorted_idx,:),1);
+	est_param = mean(bbox(selected_idx,:),1);
 	
 	[maxprob,maxidx] = max(param.conf);
 	if maxprob == 0 || isnan(maxprob)
