@@ -1,4 +1,4 @@
- % script: trackparam.m
+% script: trackparam.m
 %     loads data and initializes variables
 %
 
@@ -77,7 +77,7 @@ end
 p = [];
 opt = struct('numsample',1000, 'affsig',[20,20,5,5], 'motion',[0, 0]);
 
-opt.condenssig = 0.01;
+opt.condenssig = 0.05;
 opt.tmplsize = [227, 227];
 
 global object_class;
@@ -107,6 +107,7 @@ imshow(im)
 disp('Please specify the object to be tracked: ');
 [x, y] = ginput(2);
 p = [x(1), y(1), x(2)-x(1), y(2)-y(1), 0];
+opt.affsig = [p(3)/4, p(4)/4, p(3)*0.1, p(4)*0.1];
 
 if ~auto_detect
 	images = zeros(227, 227, 3, caffe_batch_size, 'single');

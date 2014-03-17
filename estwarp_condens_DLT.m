@@ -63,18 +63,46 @@
 	toc;
 
 	confidence = confidence(object_class+1,:)';
+	%{
 	selected_idx = find(confidence > 0.85);
-	if(isempty(selected_idx))
+	if(~isempty(selected_idx))
+		x0 = min(bbox(selected_idx,1));
+		y0 = min(bbox(selected_idx,2));
+		x1 = max(bbox(selected_idx,1)) + mean(bbox(selected_idx,3));
+		y1 = max(bbox(selected_idx,2)) + mean(bbox(selected_idx,4));
+		est_param = [x0, y0, x1-x0, y1-y0];
+	else
 		[score, selected_idx] = sort(confidence, 1, 'descend');
 		selected_idx = selected_idx(1:10);
+		est_param = mean(bbox(selected_idx,:),1);
 	end
+	%}
 
-	est_param = mean(bbox(selected_idx,:),1);
+	%est_param = mean(bbox(selected_idx,:),1);
 
 	disp(max(confidence));
-	confidence = confidence - min(confidence);
-	param.conf = exp(double(confidence) ./opt.condenssig);
+	
+	% d: n-by-1, squared Euclidean distance between each bbox and previous estimation
+	d = [X-(param.est(1)+param.est(3)/2), Y-(param.est(2)-param.est(4)/2)];
+	mu = [0, 0];
+	sigma = [opt.affsig(1), 0; 0, opt.affsig(2)];
+	w = mvnpdf(d, mu, sigma);
+	confidence = confidence .* w;
+	
+	conf = confidence - min(confidence);
+	param.conf = exp(double(conf) ./opt.condenssig);
 	param.conf = param.conf ./ sum(param.conf);
+	[sorted_conf, sorted_idx] = sort(param.conf, 'descend');
+	cumconf = cumsum(sorted_conf);
+	idx = min(find(cumconf >= 0.9));
+	sorted_idx(1:idx); % particles that within the bbox contains 98% energy
+	
+	%x0 = min(bbox(sorted_idx,1));
+	%y0 = min(bbox(sorted_idx,2));
+	%x1 = max(bbox(sorted_idx,1));
+	%y1 = max(bbox(sorted_idx,2));
+	est_param = mean(bbox(sorted_idx,:),1);
+	
 	[maxprob,maxidx] = max(param.conf);
 	if maxprob == 0 || isnan(maxprob)
 		error('overflow!');
