@@ -63,29 +63,32 @@
 	toc;
 
 	confidence = confidence(object_class+1,:)';
-	%{
+	disp(max(confidence));
 	selected_idx = find(confidence > 0.85);
-	if(~isempty(selected_idx))
-		x0 = min(bbox(selected_idx,1));
-		y0 = min(bbox(selected_idx,2));
-		x1 = max(bbox(selected_idx,1)) + mean(bbox(selected_idx,3));
-		y1 = max(bbox(selected_idx,2)) + mean(bbox(selected_idx,4));
-		est_param = [x0, y0, x1-x0, y1-y0];
+	if(length(selected_idx) > 100)
+		mean_est = mean(bbox(selected_idx,:),1);
+
+		x0 = min(X(selected_idx));
+		y0 = min(Y(selected_idx));
+		x1 = max(X(selected_idx));
+		y1 = max(Y(selected_idx));
+		est_param = [min(x0, mean_est(1)), min(y0, mean_est(2)), max(x1-x0, mean_est(3)), max(y1-y0, mean_est(4))];
 	else
-		[score, selected_idx] = sort(confidence, 1, 'descend');
-		selected_idx = selected_idx(1:10);
+		if(isempty(selected_idx))
+			[score, selected_idx] = sort(confidence, 1, 'descend');
+			selected_idx = selected_idx(1:25);
+		end
 		est_param = mean(bbox(selected_idx,:),1);
 	end
-	%}
+	
 
 	%est_param = mean(bbox(selected_idx,:),1);
-
-	disp(max(confidence));
-
+	%{
 	D = [X-(param.est(1)+param.est(3)/2), Y-(param.est(2)+param.est(4)/2)];
 	mu = [0, 0];
 	sigma = [opt.affsig(1), 0; 0, opt.affsig(2)];
 	w = mvnpdf(D, mu, sigma);
+	w = w ./ max(w);
 	confidence = confidence .* w;
 	
 	conf = confidence - min(confidence);
@@ -95,6 +98,7 @@
 	cumconf = cumsum(sorted_conf);
 	idx = min(find(cumconf >= 0.8));
 	selected_idx = sorted_idx(1:idx); % particles that within the bbox contains 98% energy
+	%}
 	
 	if DEBUG
 		hold on;
@@ -102,15 +106,9 @@
 		drawnow;
 	end
 	
-	%x0 = min(bbox(sorted_idx,1));
-	%y0 = min(bbox(sorted_idx,2));
-	%x1 = max(bbox(sorted_idx,1));
-	%y1 = max(bbox(sorted_idx,2));
-	est_param = mean(bbox(selected_idx,:),1);
-	
-	[maxprob,maxidx] = max(param.conf);
-	if maxprob == 0 || isnan(maxprob)
-		error('overflow!');
-	end
+	%[maxprob,maxidx] = max(param.conf);
+	%if maxprob == 0 || isnan(maxprob)
+	%	error('overflow!');
+	%end
 	param.est = est_param;
 %end

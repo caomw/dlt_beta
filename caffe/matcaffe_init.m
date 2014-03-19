@@ -9,7 +9,7 @@ model_file = '/mnt/neocortex/scratch/tsechiw/caffe/build/caffe_vocnet_train_iter
 global caffe_batch_size
 tmpDir = '/tmp/';
 
-caffe('set_device',0);
+caffe('set_device',1);
 
 if ~exist('batch_size','var')
 	batch_size = 250;

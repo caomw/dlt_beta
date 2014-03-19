@@ -41,6 +41,8 @@ dataPath = '../Dataset/';
 % dataPath = 'F:\dropbox\Tracking\data\';
 title = 'CarScale';
 auto_detect = false;
+read_init_pos = true;
+global object_class;
 
 %{
 switch (title)
@@ -73,14 +75,16 @@ end
 %}
 
 % affsig: std-dev of [dx, dy, w, h];
-
-p = [];
+switch (title)
+case 'CarScale';
+	p = [4, 164, 49, 33];
+otherwise;
+	p = [];
+end
 opt = struct('numsample',1000, 'affsig',[20,20,5,5], 'motion',[0, 0]);
 
-opt.condenssig = 0.05;
+opt.condenssig = 0.001;
 opt.tmplsize = [227, 227];
-
-global object_class;
 
 fullPath = [dataPath, title, '/img/'];
 %fullPath = [dataPath, '/' 'img/'];
@@ -104,12 +108,14 @@ end
 
 imshow(im)
 
-disp('Please specify the object to be tracked: ');
-[x, y] = ginput(2);
-p = [x(1), y(1), x(2)-x(1), y(2)-y(1), 0];
-opt.affsig = [p(3)/4, p(4)/4, p(3)*0.1, p(4)*0.1];
+if ~read_init_pos
+	disp('Please specify the object to be tracked: ');
+	[x, y] = ginput(2);
+	p = [x(1), y(1), x(2)-x(1), y(2)-y(1), 0];
+end
+opt.affsig = [p(3)/2, p(4)/2, p(3)*0.1, p(4)*0.1];
 
-if ~auto_detect
+if auto_detect
 	images = zeros(227, 227, 3, caffe_batch_size, 'single');
 	patch = im(y(1):y(2), x(1):x(2), :);
 	images(:,:,:,1:10) = prepare_image(patch);

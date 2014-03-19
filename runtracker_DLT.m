@@ -34,7 +34,7 @@ for f = 1:size(data,4)
 	% do tracking
 	estwarp_condens_DLT;
 	p = param.est;
-	opt.affsig = [p(3)/4, p(4)/4, p(3)*0.1, p(4)*0.1];
+	opt.affsig = [p(3)/2, p(4)/2, p(3)*0.1, p(4)*0.1];
 	opt.motion = [p(1)-p_prev(1), p(2)-p_prev(2)];
 	savedRes = [savedRes; p];
 
