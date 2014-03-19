@@ -39,9 +39,9 @@
 
 dataPath = '../Dataset/';
 % dataPath = 'F:\dropbox\Tracking\data\';
-title = 'CarScale';
+title = 'David3';
 auto_detect = false;
-read_init_pos = true;
+read_init_pos = false;
 global object_class;
 
 %{
@@ -125,7 +125,7 @@ if auto_detect
 	scores = mean(scores, 2)
 	[maxScore, object_class] = max(scores(2:end, :));
 else
-	object_class = 7;
+	object_class = 15;
 end
 disp(sprintf('Object to be tracked is %d', object_class));
 
