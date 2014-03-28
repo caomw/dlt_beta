@@ -42,6 +42,6 @@ for f = 1:size(data,4)
 	disp(sprintf('Process %d/%d', f, size(data,4)));
 end
 
-save([title '_dlt'], 'savedRes');
+save([title '_cifar_dlt'], 'savedRes');
 %fprintf('%d frames took %.3f seconds : %.3fps\n',f,duration,f/duration);
 

@@ -39,7 +39,7 @@
 
 dataPath = '../Dataset/';
 % dataPath = 'F:\dropbox\Tracking\data\';
-title = 'David3';
+title = 'Walking';
 auto_detect = false;
 read_init_pos = false;
 global object_class;
@@ -84,7 +84,7 @@ end
 opt = struct('numsample',1000, 'affsig',[20,20,5,5], 'motion',[0, 0]);
 
 opt.condenssig = 0.001;
-opt.tmplsize = [227, 227];
+opt.tmplsize = [24, 24];
 
 fullPath = [dataPath, title, '/img/'];
 %fullPath = [dataPath, '/' 'img/'];
@@ -113,7 +113,9 @@ if ~read_init_pos
 	[x, y] = ginput(2);
 	p = [x(1), y(1), x(2)-x(1), y(2)-y(1), 0];
 end
-opt.affsig = [p(3)/2, p(4)/2, p(3)*0.1, p(4)*0.1];
+w_min = p(3);
+h_min = p(4);
+opt.affsig = [p(3)/2, p(4)/2, p(3)*0.05, p(4)*0.05];
 
 if auto_detect
 	images = zeros(227, 227, 3, caffe_batch_size, 'single');

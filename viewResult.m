@@ -19,7 +19,7 @@ function [] = viewResult(title)
 	for i = 1 : size(d, 1)
 		data(:, :, :, i) = imread([fullPath, d(i).name]);
 	end
-	load([title '_dlt.mat']);
+	load([title '_cifar_dlt.mat']);
 	for i = 1:size(d, 1)
 		frame = data(:,:,:,i);
 		imshow(frame);

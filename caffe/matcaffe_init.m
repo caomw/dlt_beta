@@ -3,8 +3,10 @@
 % 
 use_gpu = true;
 
-model_def_file = '/mnt/neocortex/scratch/tsechiw/tracking/dlt_beta/caffe/vocnet_deploy.prototxt';
-model_file = '/mnt/neocortex/scratch/tsechiw/caffe/build/caffe_vocnet_train_iter_150000';
+%model_def_file = '/mnt/neocortex/scratch/tsechiw/tracking/dlt_beta/caffe/vocnet_deploy.prototxt';
+%model_file = '/mnt/neocortex/scratch/tsechiw/caffe/build/finetune-by-voc2007/caffe_vocnet_train_iter_150000';
+model_def_file = '/mnt/neocortex/scratch/tsechiw/tracking/dlt_beta/caffe/cifar100_deploy.prototxt';
+model_file = '/mnt/neocortex/scratch/tsechiw/caffe/build/caffe_cifar10_ft_iter_70000';
 
 global caffe_batch_size
 tmpDir = '/tmp/';
