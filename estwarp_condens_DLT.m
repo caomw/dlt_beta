@@ -8,13 +8,6 @@
 	if ~exist('selected_idx', 'var')
 		selected_idx = [];
 	end
-	%if ~isfield(param,'param')
-	%  param.param = repmat(affparam2geom(param.est(:)), [1,n]);
-	%else
-	%  cumconf = cumsum(param.conf);
-	%  idx = floor(sum(repmat(rand(1,n),[n,1]) > repmat(gather(cumconf),[1,n])))+1;
-	%  param.param = param.param(:,idx);
-	%end
 	
 	param.param = repmat(param.est(:), [1,n]);
 	bbox = param.param(1:4, :) + randn(4,n).*repmat(opt.affsig(:),[1,n]);% + 0.5*repmat([opt.motion, 0, 0]',[1,n]);
@@ -29,7 +22,6 @@
 	% images: 227 x 227 x 3 x n, type should be single
 	% bbox: n-by-4
 	images = zeros(opt.tmplsize(1), opt.tmplsize(2), 3, n, 'single');
-	%bbox = param2bbox(param.param, size(frame(:,:,1)), [227, 227]);
 	X = bbox(:,1)+bbox(:,3)/2;
 	Y = bbox(:,2)+bbox(:,4)/2;
 	
@@ -44,7 +36,6 @@
 	epoch = ceil(n / caffe_batch_size);
 	confidence = zeros(21, n);
 
-	% this part takes about 2.7 sec
 	tic;
 	for e = 1:epoch
 		start = (e-1)*caffe_batch_size + 1;
@@ -87,6 +78,15 @@
 		est_param = mean(bbox(selected_idx,:),1);
 	end
 	
+	% update window history
+	if size(opt.window_hist, 1) < 4
+		opt.window_hist = [opt.window_hist; [est_param(3), est_param(4)]];
+	else
+		opt.window_hist = [opt.window_hist(end-2:end, :); [est_param(3), est_param(4)]];
+	end
+	win_mean = mean(opt.window_hist, 1);
+	est_param = [est_param(1) + 0.5 * (est_param(3) - win_mean(1)), est_param(2) + 0.5 * (est_param(4) - win_mean(2)), win_mean(1), win_mean(2)];
+	
 	if DEBUG
 		not_selected_idx = setdiff([1:n]', selected_idx);
 		hold on;		
@@ -113,11 +113,6 @@
 	idx = min(find(cumconf >= 0.8));
 	selected_idx = sorted_idx(1:idx); % particles that within the bbox contains 98% energy
 	%}
-	
-	
-	%[maxprob,maxidx] = max(param.conf);
-	%if maxprob == 0 || isnan(maxprob)
-	%	error('overflow!');
-	%end
+
 	param.est = est_param;
 %end
