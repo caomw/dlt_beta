@@ -2,11 +2,16 @@
 % function matcaffe_init(model_def_file, model_file, use_gpu [, batch_size])
 % 
 use_gpu = true;
+fast = false;
 
-%model_def_file = '/mnt/neocortex/scratch/tsechiw/tracking/dlt_beta/caffe/vocnet_deploy.prototxt';
-%model_file = '/mnt/neocortex/scratch/tsechiw/caffe/build/finetune-by-voc2007/caffe_vocnet_train_iter_150000';
-model_def_file = '/mnt/neocortex/scratch/tsechiw/tracking/dlt_beta/caffe/cifar100_deploy.prototxt';
-model_file = '/mnt/neocortex/scratch/tsechiw/caffe/build/caffe_cifar10_ft_iter_70000';
+if(fast)
+	model_def_file = '/mnt/neocortex/scratch/tsechiw/tracking/dlt_beta/caffe/cifar100_deploy.prototxt';
+	model_file = '/mnt/neocortex/scratch/tsechiw/caffe/build/caffe_cifar10_ft_iter_70000';
+else
+	model_def_file = '/mnt/neocortex/scratch/tsechiw/tracking/dlt_beta/caffe/vocnet_deploy.prototxt';
+	model_file = '/mnt/neocortex/scratch/tsechiw/caffe/build/finetune-by-voc2007/caffe_vocnet_train_iter_150000';
+end
+
 
 global caffe_batch_size
 tmpDir = '/tmp/';

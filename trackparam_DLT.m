@@ -38,8 +38,7 @@
 %    affsig(6) = skew angle
 
 dataPath = '../Dataset/';
-% dataPath = 'F:\dropbox\Tracking\data\';
-title = 'Walking';
+title = 'woman';
 auto_detect = false;
 read_init_pos = false;
 global object_class;
@@ -81,10 +80,14 @@ case 'CarScale';
 otherwise;
 	p = [];
 end
-opt = struct('numsample',1000, 'affsig',[20,20,5,5], 'motion',[0, 0]);
+opt = struct('numsample',250, 'affsig',[20,20,5,5], 'motion',[0, 0]);
 
 opt.condenssig = 0.001;
-opt.tmplsize = [24, 24];
+if fast
+	opt.tmplsize = [24, 24];
+else
+	opt.tmplsize = [227, 227];
+end
 
 fullPath = [dataPath, title, '/img/'];
 %fullPath = [dataPath, '/' 'img/'];
@@ -118,7 +121,7 @@ h_min = p(4);
 opt.affsig = [p(3)/2, p(4)/2, p(3)*0.05, p(4)*0.05];
 
 if auto_detect
-	images = zeros(227, 227, 3, caffe_batch_size, 'single');
+	images = zeros(opt.tmplsize, 3, caffe_batch_size, 'single');
 	patch = im(y(1):y(2), x(1):x(2), :);
 	images(:,:,:,1:10) = prepare_image(patch);
 	input_data = {images};

@@ -23,19 +23,19 @@
 
 	d = load('./caffe/ilsvrc_2012_mean');
 	IMAGE_MEAN = d.image_mean;
-	IMAGE_MEAN = imresize(IMAGE_MEAN, [24, 24]);
+	IMAGE_MEAN = imresize(IMAGE_MEAN, opt.tmplsize);
 
 	% extract patch feeded into caffe
 	% images: 227 x 227 x 3 x n, type should be single
 	% bbox: n-by-4
-	images = zeros(24, 24, 3, n, 'single');
+	images = zeros(opt.tmplsize(1), opt.tmplsize(2), 3, n, 'single');
 	%bbox = param2bbox(param.param, size(frame(:,:,1)), [227, 227]);
 	X = bbox(:,1)+bbox(:,3)/2;
 	Y = bbox(:,2)+bbox(:,4)/2;
 	
 	tic;
 	for i = 1:n
-		images(:,:,:,i) = imresize(frame(bbox(i,2):bbox(i,2)+bbox(i,4)-1, bbox(i,1):bbox(i,1)+bbox(i,3)-1, :), [24, 24]);
+		images(:,:,:,i) = imresize(frame(bbox(i,2):bbox(i,2)+bbox(i,4)-1, bbox(i,1):bbox(i,1)+bbox(i,3)-1, :), opt.tmplsize);
 	end
 	images = bsxfun( @minus, images(:,:,[3 2 1],:), IMAGE_MEAN );
 	images = permute(images, [2 1 3 4]);
@@ -62,7 +62,7 @@
 	confidence = confidence(object_class+1,:)';
 	disp(max(confidence));
 	selected_idx = find(confidence > 0.7);
-	if(length(selected_idx) > 100)
+	if(length(selected_idx) > 0.1 * opt.numsample)
 		mean_est = mean(bbox(selected_idx,:),1);
 
 		x0 = min(X(selected_idx));
