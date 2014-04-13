@@ -83,6 +83,7 @@ end
 opt = struct('numsample',250, 'affsig',[20,20,5,5], 'motion',[0, 0], 'window_hist', []);
 
 opt.condenssig = 0.001;
+opt.win_size = 4;
 if fast
 	opt.tmplsize = [24, 24];
 else

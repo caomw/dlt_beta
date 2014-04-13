@@ -3,10 +3,6 @@
 %% All rights reserved.
 
 clc; clear; close;
-addpath('affineUtility');
-addpath('drawUtility');
-addpath('imageUtility');
-addpath('NN');
 addpath('caffe');
 
 % initialize variables

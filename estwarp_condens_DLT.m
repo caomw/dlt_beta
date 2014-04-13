@@ -60,7 +60,7 @@
 		y0 = min(Y(selected_idx));
 		x1 = max(X(selected_idx));
 		y1 = max(Y(selected_idx));
-		%est_param = [min(x0, mean_est(1)), min(y0, mean_est(2)), max(x1-x0, mean_est(3)), max(y1-y0, mean_est(4))];
+
 		if(x1-x0 < w_min)
 			x0 = (x0+x1-w_min)/2;
 			x1 = x0 + w_min;
@@ -79,10 +79,10 @@
 	end
 	
 	% update window history
-	if size(opt.window_hist, 1) < 4
+	if size(opt.window_hist, 1) < opt.win_size
 		opt.window_hist = [opt.window_hist; [est_param(3), est_param(4)]];
 	else
-		opt.window_hist = [opt.window_hist(end-2:end, :); [est_param(3), est_param(4)]];
+		opt.window_hist = [opt.window_hist(end-opt.win_size+2:end, :); [est_param(3), est_param(4)]];
 	end
 	win_mean = mean(opt.window_hist, 1);
 	est_param = [est_param(1) + 0.5 * (est_param(3) - win_mean(1)), est_param(2) + 0.5 * (est_param(4) - win_mean(2)), win_mean(1), win_mean(2)];
